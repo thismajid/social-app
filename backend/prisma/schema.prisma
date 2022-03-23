@@ -10,4 +10,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+}
 
+model Post {
+  id    Int     @id @default(autoincrement())
+  title String
+  message String
+  creator String
+  tags TagsOnPosts[]
+  selectedFile String
+  linkCount Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tag {
+  id Int @id @default(autoincrement())
+  name String
+  post TagsOnPosts[]
+}
+
+model TagsOnPosts{
+  post       Post     @relation(fields: [postId], references: [id])
+  postId     Int
+  tag   Tag @relation(fields: [tagId], references: [id])
+  tagId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([postId, tagId])
+}
