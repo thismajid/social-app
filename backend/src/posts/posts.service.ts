@@ -27,6 +27,17 @@ export class PostsService {
     });
   }
 
+  async likePost(id: number) {
+    const post = await this.findOne(id);
+
+    return this.prismaService.post.update({
+      data: {
+        likeCount: +post.likeCount + 1,
+      },
+      where: { id },
+    });
+  }
+
   async remove(id: number) {
     await this.findOne(id);
     return this.prismaService.post.delete({ where: { id } });
