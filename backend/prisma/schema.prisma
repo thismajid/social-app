@@ -21,26 +21,26 @@ model Post {
   title String
   message String
   creator String
-  tags TagsOnPosts[]
+  tags String[]
   selectedFile String
-  linkCount Int @default(0)
+  likeCount Int @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model Tag {
-  id Int @id @default(autoincrement())
-  name String
-  post TagsOnPosts[]
-}
+// model Tag {
+//   id Int @id @default(autoincrement())
+//   name String
+//   post TagsOnPosts[]
+// }
 
-model TagsOnPosts{
-  post       Post     @relation(fields: [postId], references: [id])
-  postId     Int
-  tag   Tag @relation(fields: [tagId], references: [id])
-  tagId Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// model TagsOnPosts{
+//   post       Post     @relation(fields: [postId], references: [id])
+//   postId     Int
+//   tag   Tag @relation(fields: [tagId], references: [id])
+//   tagId Int
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
 
-  @@id([postId, tagId])
-}
+//   @@id([postId, tagId])
+// }

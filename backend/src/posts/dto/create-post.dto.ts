@@ -20,4 +20,6 @@ export class CreatePostDto {
   @IsString()
   @MinLength(3)
   selectedFile: string;
+
+  tags: string[];
 }
