@@ -13,19 +13,19 @@ export class PostsService {
     return this.prismaService.post.findMany();
   }
 
-  // findOne(id: number) {
-  //   const post = this.prismaService.post.findUnique({ where: { id } });
-  //   if (!post) throw new NotFoundException();
-  //   return post;
-  // }
+  findOne(id: number) {
+    const post = this.prismaService.post.findUnique({ where: { id } });
+    if (!post) throw new NotFoundException();
+    return post;
+  }
 
-  // async update(id: number, updatePostDto: Prisma.PostUpdateInput) {
-  //   await this.findOne(id);
-  //   return this.prismaService.post.update({
-  //     data: updatePostDto,
-  //     where: { id },
-  //   });
-  // }
+  async update(id: number, updatePostDto: Prisma.PostUpdateInput) {
+    await this.findOne(id);
+    return this.prismaService.post.update({
+      data: updatePostDto,
+      where: { id },
+    });
+  }
 
   // async remove(id: number) {
   //   await this.findOne(id);
