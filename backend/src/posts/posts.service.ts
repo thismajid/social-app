@@ -9,9 +9,9 @@ export class PostsService {
     return this.prismaService.post.create({ data: createPostDto });
   }
 
-  // findAll(query?: Prisma.PostInclude) {
-  //   return this.prismaService.post.findMany({ include: query });
-  // }
+  findAll() {
+    return this.prismaService.post.findMany();
+  }
 
   // findOne(id: number) {
   //   const post = this.prismaService.post.findUnique({ where: { id } });
