@@ -27,8 +27,8 @@ export class PostsService {
     });
   }
 
-  // async remove(id: number) {
-  //   await this.findOne(id);
-  //   return this.prismaService.post.delete({ where: { id } });
-  // }
+  async remove(id: number) {
+    await this.findOne(id);
+    return this.prismaService.post.delete({ where: { id } });
+  }
 }
