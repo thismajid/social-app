@@ -1,18 +1,48 @@
 import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { UsersService } from 'src/users/users.service';
+import { hash, compare } from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  create() {
-    return 'This action adds a new auth';
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
+
+  async validateUser(email: string, pass: string) {
+    const user = await this.usersService.findOneByEmail(email);
+    if (!user || !(await this.comparePassword(pass, user.password)))
+      return false;
+    const { password, ...result } = user;
+    return result;
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async hashPassword(password: string) {
+    return await hash(password, 10);
   }
 
-  findOne(id: number) {}
+  async comparePassword(password: string, hashPassword: string) {
+    return await compare(password, hashPassword);
+  }
 
-  update() {}
+  sign(user: User) {
+    const accessToken = this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+    });
+    return {
+      access_token: accessToken,
+    };
+  }
 
-  remove(id: number) {}
+  async registerUser(createUserDto: CreateUserDto) {
+    const hashedPassword = await this.hashPassword(createUserDto.password);
+    return await this.usersService.create({
+      ...createUserDto,
+      password: hashedPassword,
+    });
+  }
 }
