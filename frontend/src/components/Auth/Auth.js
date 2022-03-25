@@ -12,22 +12,42 @@ import LockOutlinedIcon from "@material-ui/icons/LockOpenOutlined";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
+import { register, login } from "../../actions/auth";
 
 import Input from "./Input";
 import Icon from "./Icon";
 
 import useStyles from "./styles";
 
+const initialState = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+};
+
 const Auth = () => {
   const classes = useStyles();
   const [showPassword, setShowPassword] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
+  const [formData, setFormData] = useState(initialState);
   const dispatch = useDispatch();
   const history = useHistory();
 
-  const handleSubmit = () => {};
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-  const handleChange = () => {};
+    if (isRegister) {
+      dispatch(register(formData, history));
+    } else {
+      dispatch(login(formData, history));
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleShowPassword = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
@@ -76,8 +96,8 @@ const Auth = () => {
                   half
                 ></Input>
                 <Input
-                  Name="firstName"
-                  label="First Name"
+                  Name="lastName"
+                  label="Last Name"
                   handleChange={handleChange}
                   half
                 ></Input>
