@@ -33,6 +33,27 @@ const Home = () => {
   const page = query.get("page") || 1;
   const searchQuery = query.get("searchQuery");
   const classes = useStyles();
+  const [search, setSearch] = useState("");
+  const [tags, setTags] = useState([]);
+
+  const searchPost = () => {
+    if (search.trim()) {
+      dispatch(getPostsBySearch({ search, tags: tags.join(",") }));
+    } else {
+      history.push("/");
+    }
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.keyCode === 13) {
+      searchPost();
+    }
+  };
+
+  const handleAddTag = (tag) => setTags([...tags, tag]);
+
+  const handleDeleteTag = (tagToDelete) =>
+    setTags(tags.filter((tag) => tag !== tagToDelete));
 
   useEffect(() => {
     dispatch(getPosts());
@@ -60,10 +81,27 @@ const Home = () => {
                 name="search"
                 variant="outlined"
                 label="Search ..."
+                onKeyPress={handleKeyPress}
                 fullWidth
-                value="TEST"
-                onChange={() => {}}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
+              <ChipInput
+                style={{ margin: "10px 0" }}
+                value={tags}
+                onAdd={handleAddTag}
+                onDelete={handleDeleteTag}
+                label="Search Tags"
+                variant="outlined"
+              ></ChipInput>
+              <Button
+                onClick={searchPost}
+                className={classes.searchButton}
+                variant="contained"
+                color="primary"
+              >
+                Search
+              </Button>
             </AppBar>
             <Form currentId={currentId} setCurrentId={setCurrentId} />
             <Paper elevation={6}>
