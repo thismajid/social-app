@@ -27,14 +27,24 @@ export class PostsService {
     });
   }
 
-  async likePost(id: number) {
-    const post = await this.findOne(id);
+  async likePost(id: string, userId: string) {
+    const post = await this.findOne(+id);
 
-    return this.prismaService.post.update({
+    const index = post?.likes.findIndex(
+      (userIds) => userIds === String(userId),
+    );
+
+    if (index === -1) {
+      post.likes.push(String(userId));
+    } else {
+      post.likes = post?.likes.filter((id) => id !== String(userId));
+    }
+
+    return await this.prismaService.post.update({
+      where: { id: +id },
       data: {
-        likeCount: +post.likeCount + 1,
+        likes: { set: post.likes },
       },
-      where: { id },
     });
   }
 

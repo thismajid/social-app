@@ -12,7 +12,8 @@ datasource db {
 
 model User {
   id    Int     @id @default(autoincrement())
-  name  String
+  firstName  String
+  lastName  String
   email String  @unique
   password String
 }
@@ -24,7 +25,7 @@ model Post {
   creator String
   tags String[]
   selectedFile String
-  likeCount Int @default(0)
+  likes String[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
