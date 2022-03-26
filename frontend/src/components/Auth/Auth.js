@@ -5,7 +5,6 @@ import {
   Grid,
   Typography,
   Container,
-  TextField,
 } from "@material-ui/core";
 import { GoogleLogin } from "react-google-login";
 import LockOutlinedIcon from "@material-ui/icons/LockOpenOutlined";
@@ -39,7 +38,10 @@ const Auth = () => {
     e.preventDefault();
 
     if (isRegister) {
-      dispatch(register(formData, history));
+      if (formData.password === formData.confirmPassword) {
+        delete formData.confirmPassword;
+        dispatch(register(formData, history));
+      }
     } else {
       dispatch(login(formData, history));
     }
@@ -89,14 +91,14 @@ const Auth = () => {
             {isRegister && (
               <>
                 <Input
-                  Name="firstName"
+                  name="firstName"
                   label="First Name"
                   handleChange={handleChange}
                   autoFocus
                   half
                 ></Input>
                 <Input
-                  Name="lastName"
+                  name="lastName"
                   label="Last Name"
                   handleChange={handleChange}
                   half
@@ -104,13 +106,13 @@ const Auth = () => {
               </>
             )}
             <Input
-              Name="email"
+              name="email"
               label="Email Address"
               handleChange={handleChange}
               type="email"
             ></Input>
             <Input
-              Name="password"
+              name="password"
               label="Password"
               handleChange={handleChange}
               type={showPassword ? "text" : "password"}

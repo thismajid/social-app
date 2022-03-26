@@ -33,9 +33,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
     });
-    return {
-      access_token: accessToken,
-    };
+    return accessToken;
   }
 
   async registerUser(createUserDto: CreateUserDto) {

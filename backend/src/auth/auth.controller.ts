@@ -19,7 +19,15 @@ export class AuthController {
   @Post('login')
   @UseGuards(LocalAuthGuard)
   login(@Request() req) {
-    return this.authService.sign(req.user);
+    const access_token = this.authService.sign(req.user);
+
+    return {
+      result: {
+        firstName: req.user.firstName,
+        lastName: req.user.lastName,
+      },
+      access_token,
+    };
   }
 
   @Get('profile')
@@ -31,7 +39,17 @@ export class AuthController {
   }
 
   @Post('register')
-  register(@Body() createUserDto: CreateUserDto) {
-    return this.authService.registerUser(createUserDto);
+  async register(@Body() createUserDto: CreateUserDto) {
+    const user = await this.authService.registerUser(createUserDto);
+
+    const access_token = this.authService.sign(user);
+
+    return {
+      result: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+      access_token,
+    };
   }
 }
