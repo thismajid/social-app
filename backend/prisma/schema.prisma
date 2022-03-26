@@ -16,13 +16,15 @@ model User {
   lastName  String
   email String  @unique
   password String
+  posts Post[]
 }
 
 model Post {
   id    Int     @id @default(autoincrement())
   title String
   message String
-  creator String
+  creator User @relation(fields:[creatorId], references: [id])
+  creatorId Int
   tags String[]
   selectedFile String
   likes String[]

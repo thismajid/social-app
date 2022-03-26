@@ -20,8 +20,14 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post()
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postsService.create(createPostDto);
+  @UseGuards(JwtAuthGuard)
+  create(@Body() createPostDto: CreatePostDto, @Me() { id }) {
+    return this.postsService.create({
+      ...createPostDto,
+      creator: {
+        connect: { id },
+      },
+    });
   }
 
   @Get()
@@ -29,26 +35,37 @@ export class PostsController {
     return this.postsService.findAll();
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.postsService.findOne(+id);
-  // }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.postsService.findOne(+id);
+  }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
+  @UseGuards(JwtAuthGuard)
+  update(
+    @Param('id') id: string,
+    @Body() updatePostDto: UpdatePostDto,
+    @Me() { id: userId },
+  ) {
     console.log(id, updatePostDto);
 
-    return this.postsService.update(+id, updatePostDto);
+    return this.postsService.update(+id, {
+      ...updatePostDto,
+      creator: {
+        connect: { id: userId },
+      },
+    });
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch(':id/likePost')
-  likePost(@Param('id') id: string, @Me() me) {
-    return this.postsService.likePost(id, me.id);
+  likePost(@Param('id') id: string, @Me() { id: userId }) {
+    return this.postsService.likePost(id, userId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  @UseGuards(JwtAuthGuard)
+  remove(@Param('id') id: string, @Me() { id: userId }) {
     return this.postsService.remove(+id);
   }
 }

@@ -6,15 +6,27 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class PostsService {
   constructor(private prismaService: PrismaService) {}
   create(createPostDto: Prisma.PostCreateInput) {
-    return this.prismaService.post.create({ data: createPostDto });
+    return this.prismaService.post.create({
+      data: createPostDto,
+      include: {
+        creator: true, // Include all posts in the returned object
+      },
+    });
   }
 
   findAll() {
-    return this.prismaService.post.findMany();
+    return this.prismaService.post.findMany({ include: { creator: true } });
   }
 
   findOne(id: number) {
-    const post = this.prismaService.post.findUnique({ where: { id } });
+    const post = this.prismaService.post.findUnique({
+      where: {
+        id: +id,
+      },
+      include: {
+        creator: true,
+      },
+    });
     if (!post) throw new NotFoundException();
     return post;
   }
@@ -23,7 +35,7 @@ export class PostsService {
     await this.findOne(id);
     return this.prismaService.post.update({
       data: updatePostDto,
-      where: { id },
+      where: { id: +id },
     });
   }
 

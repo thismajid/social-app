@@ -23,6 +23,7 @@ export class AuthController {
 
     return {
       result: {
+        id: req.user.id,
         firstName: req.user.firstName,
         lastName: req.user.lastName,
       },
@@ -46,6 +47,7 @@ export class AuthController {
 
     return {
       result: {
+        id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
       },
