@@ -15,6 +15,7 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Me } from 'src/auth/guards/me.guard';
+import { start } from 'repl';
 
 @Controller('posts')
 export class PostsController {
@@ -38,8 +39,17 @@ export class PostsController {
   }
 
   @Get()
-  findAll() {
-    return this.postsService.findAll();
+  async findAll(@Query() query) {
+    const page = query.page || 1;
+    const take = 8;
+    const skip = (Number(page) - 1) * take;
+    const total = await this.postsService.countPosts();
+    const posts = await this.postsService.findAll(take, skip);
+    return {
+      data: posts,
+      currentPage: Number(page),
+      numberofPages: Math.ceil(total / take),
+    };
   }
 
   @Get(':id')

@@ -30,8 +30,21 @@ export class PostsService {
     });
   }
 
-  findAll() {
-    return this.prismaService.post.findMany({ include: { creator: true } });
+  findAll(take: number, skip: number) {
+    return this.prismaService.post.findMany({
+      skip: +skip,
+      take: +take,
+      include: {
+        creator: true,
+      },
+      orderBy: {
+        id: 'asc',
+      },
+    });
+  }
+
+  countPosts() {
+    return this.prismaService.post.count();
   }
 
   findOne(id: number) {

@@ -6,21 +6,29 @@ import {
   FETCH_BY_SEARCH,
 } from "../constants/actionTypes";
 
-export default (posts = [], action) => {
+export default (state = [], action) => {
   switch (action.type) {
     case FETCH_ALL:
-      return action.payload;
+      return {
+        ...state,
+        posts: action.payload.data,
+        currentPage: action.payload.currentPage,
+        numberofPages: action.payload.numberofPages,
+      };
     case FETCH_BY_SEARCH:
-      return action.payload;
+      return {
+        ...state,
+        posts: action.payload.data,
+      };
     case CREATE:
-      return [...posts, action.payload];
+      return { ...state, posts: [...state.posts, action.payload] };
     case UPDATE:
-      return posts.map((post) =>
+      return state.map((post) =>
         post.id === action.payload.id ? action.payload : post
       );
     case DELETE:
-      return posts.filter((post) => post.id !== action.payload);
+      return state.filter((post) => post.id !== action.payload);
     default:
-      return posts;
+      return state;
   }
 };
