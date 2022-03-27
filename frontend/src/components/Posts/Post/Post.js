@@ -15,15 +15,30 @@ import moment from "moment";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
 
-import { deletePost, likePost } from "../../../actions/posts";
+import { deletePost, getPostsBySearch, likePost } from "../../../actions/posts";
 
 import useStyles from "./styles";
+import { useState } from "react";
 
 const Post = ({ post, setCurrentId }) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const history = useHistory();
   const user = JSON.parse(localStorage.getItem("profile"));
+  const [likes, setLikes] = useState(post?.likes);
+
+  const userId = user?.result?.id;
+  const hasLikedPost = post?.likes?.find((like) => like === userId);
+
+  const handleLike = async () => {
+    dispatch(likePost(post.id));
+
+    if (hasLikedPost) {
+      setLikes(post.likes.filter((id) => id !== userId));
+    } else {
+      setLikes([...post.likes, userId]);
+    }
+  };
 
   const Likes = () => {
     if (post?.likes?.length > 0) {
@@ -55,7 +70,12 @@ const Post = ({ post, setCurrentId }) => {
 
   return (
     <Card className={classes.card} raised elevation={6}>
-      <ButtonBase className={classes.cardAction} onClick={openPost}>
+      <ButtonBase
+        component="span"
+        name="test"
+        className={classes.cardAction}
+        onClick={openPost}
+      >
         <CardMedia
           className={classes.media}
           image={
@@ -72,18 +92,20 @@ const Post = ({ post, setCurrentId }) => {
             {moment(post.createdAt).fromNow()}
           </Typography>
         </div>
-        {user?.result.id == post?.creator.id && (
-          <div className={classes.overlay2}>
+        {user?.result?.id === post?.creator.id && (
+          <div className={classes.overlay2} name="edit">
             <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrentId(post.id);
+              }}
               style={{ color: "white" }}
               size="small"
-              onClick={() => setCurrentId(post.id)}
             >
               <MoreHorizIcon fontSize="default" />
             </Button>
           </div>
         )}
-
         <div className={classes.details}>
           <Typography variant="body2" color="textSecondary" component="h2">
             {post.tags.map((tag) => `#${tag} `)}
@@ -99,7 +121,7 @@ const Post = ({ post, setCurrentId }) => {
         </Typography>
         <CardContent>
           <Typography variant="body2" color="textSecondary" component="p">
-            {post.message}
+            {post.message.split(" ").splice(0, 20).join(" ")}...
           </Typography>
         </CardContent>
       </ButtonBase>
@@ -108,20 +130,18 @@ const Post = ({ post, setCurrentId }) => {
           size="small"
           color="primary"
           disabled={!user?.result}
-          onClick={() => {
-            dispatch(likePost(post.id));
-            window.location.reload();
-          }}
+          onClick={handleLike}
         >
           <Likes />
         </Button>
-        {user?.result.id == post?.creator.id && (
+        {(user?.result?.googleId === post?.creator ||
+          user?.result?._id === post?.creator) && (
           <Button
             size="small"
-            color="primary"
-            onClick={() => dispatch(deletePost(post.id))}
+            color="secondary"
+            onClick={() => dispatch(deletePost(post._id))}
           >
-            <DeleteIcon fontSize="small" /> Delete
+            <DeleteIcon fontSize="small" /> &nbsp; Delete
           </Button>
         )}
       </CardActions>
