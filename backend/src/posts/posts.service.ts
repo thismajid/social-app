@@ -14,14 +14,16 @@ export class PostsService {
     });
   }
 
-  getPostsBySearch(title: any, searchedTags: string) {
+  getPostsBySearch(title: any, searchedTags: string[]) {
     return this.prismaService.post.findMany({
       where: {
         OR: [
           {
             title,
           },
-          { tags: { has: searchedTags } },
+          {
+            tags: { hasSome: searchedTags },
+          },
         ],
       },
       include: {

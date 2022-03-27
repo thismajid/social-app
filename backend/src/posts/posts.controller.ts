@@ -35,7 +35,8 @@ export class PostsController {
   @Get('/search')
   search(@Query() query) {
     const { searchQuery, tags } = query;
-    return this.postsService.getPostsBySearch(searchQuery, tags);
+    const searchedTags = tags.split(',');
+    return this.postsService.getPostsBySearch(searchQuery, searchedTags);
   }
 
   @Get()
