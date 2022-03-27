@@ -14,6 +14,22 @@ export class PostsService {
     });
   }
 
+  getPostsBySearch(title: any, searchedTags: string) {
+    return this.prismaService.post.findMany({
+      where: {
+        OR: [
+          {
+            title,
+          },
+          { tags: { has: searchedTags } },
+        ],
+      },
+      include: {
+        creator: true,
+      },
+    });
+  }
+
   findAll() {
     return this.prismaService.post.findMany({ include: { creator: true } });
   }
