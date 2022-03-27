@@ -40,9 +40,9 @@ export class PostsController {
 
   @Get()
   async findAll(@Query() query) {
-    const page = query.page || 1;
+    const page = Number(query.page) || 1;
     const take = 8;
-    const skip = (Number(page) - 1) * take;
+    const skip = (page - 1) * take;
     const total = await this.postsService.countPosts();
     const posts = await this.postsService.findAll(take, skip);
     return {
