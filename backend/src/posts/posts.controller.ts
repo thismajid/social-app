@@ -63,7 +63,6 @@ export class PostsController {
     const post = await this.postsService.findOne(+id, query);
 
     removeProp(post, 'password');
-    removeProp(post, 'id');
     removeProp(post, 'email');
 
     return post;

@@ -7,13 +7,22 @@ import { commentPost } from "../../actions/posts";
 
 const CommentSection = ({ post }) => {
   const classes = useStyles();
-  const [comments, setComments] = useState([1, 2, 3, 4]);
+  const [comments, setComments] = useState(post?.comments);
   const [comment, setComment] = useState();
+  const user = JSON.parse(localStorage.getItem("profile"));
   const dispatch = useDispatch();
+  const commentsRef = useRef();
 
-  const handleClick = () => {
-    dispatch(commentPost(comment, post.id));
+  const handleClick = async () => {
+    const newComment = await dispatch(commentPost(comment, post.id));
+
+    setComment("");
+    setComments(newComment);
+
+    commentsRef.current.scrollIntoView({ behavior: "smooth" });
   };
+
+  console.log(post);
 
   return (
     <div>
@@ -24,34 +33,40 @@ const CommentSection = ({ post }) => {
           </Typography>
           {comments.map((c, i) => (
             <Typography key={i} gutterBottom variant="subtitle1">
-              Comment {i}
+              <strong>
+                {c.author.firstName} {c.author.lastName}
+              </strong>
+              : {c.body}
             </Typography>
           ))}
+          <div ref={commentsRef} />
         </div>
-        <div style={{ width: "70%" }}>
-          <Typography gutterBottom variant="h6">
-            Write a Comment
-          </Typography>
-          <TextField
-            fullWidth
-            rows={4}
-            variant="outlined"
-            label="Comment"
-            multiline
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-          />
-          <Button
-            style={{ marginTop: "10px" }}
-            fullWidth
-            disabled={!comment}
-            variant="contained"
-            color="primary"
-            onClick={handleClick}
-          >
-            Comment
-          </Button>
-        </div>
+        {user?.result && (
+          <div style={{ width: "70%" }}>
+            <Typography gutterBottom variant="h6">
+              Write a Comment
+            </Typography>
+            <TextField
+              fullWidth
+              rows={4}
+              variant="outlined"
+              label="Comment"
+              multiline
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
+            <Button
+              style={{ marginTop: "10px" }}
+              fullWidth
+              disabled={!comment}
+              variant="contained"
+              color="primary"
+              onClick={handleClick}
+            >
+              Comment
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import {
   START_LOADING,
   STOP_LOADING,
   FETCH_POST,
+  COMMENT,
 } from "../constants/actionTypes";
 import * as api from "../api";
 
@@ -26,6 +27,8 @@ export const getPosts = (page) => async (dispatch) => {
   try {
     dispatch({ type: START_LOADING });
     const { data } = await api.fetchPosts(page);
+
+    console.log(data);
 
     dispatch({ type: FETCH_ALL, payload: data });
     dispatch({ type: STOP_LOADING });
@@ -84,9 +87,13 @@ export const deletePost = (id) => async (dispatch) => {
 
 export const commentPost = (value, id) => async (dispatch) => {
   try {
-    const { data } = await api.comment(value, id);
+    await api.comment(value, id);
 
-    console.log(data);
+    const { data } = await api.fetchPost(id);
+
+    dispatch({ type: COMMENT, payload: data });
+
+    return data.comments;
   } catch (error) {
     console.log(error.message);
   }
