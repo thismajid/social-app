@@ -1,6 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { GetPostsDto } from './dto/get-posts.dto';
+import { IncludeQueryDto } from './dto/include-query.dto';
 
 @Injectable()
 export class PostsService {
@@ -9,17 +15,18 @@ export class PostsService {
     return this.prismaService.post.create({
       data: createPostDto,
       include: {
-        creator: true, // Include all posts in the returned object
+        creator: true,
       },
     });
   }
 
-  getPostsBySearch(title: any, searchedTags: string[]) {
+  getPostsBySearch(query) {
+    const searchedTags = query?.tags?.split(',');
     return this.prismaService.post.findMany({
       where: {
         OR: [
           {
-            title,
+            title: query?.searchQuery,
           },
           {
             tags: { hasSome: searchedTags },
@@ -32,12 +39,31 @@ export class PostsService {
     });
   }
 
-  findAll(take: number, skip: number) {
+  findAll(includeQuery: IncludeQueryDto, skip: number, limit: number) {
+    let creator: any = false,
+      comments: any = false;
+    if (includeQuery?.creator !== false) {
+      creator = {
+        select: {
+          firstName: true,
+          lastName: true,
+        },
+      };
+    }
+    if (includeQuery?.comments !== false) {
+      comments = {
+        select: {
+          body: true,
+          author: true,
+        },
+      };
+    }
     return this.prismaService.post.findMany({
       skip: +skip,
-      take: +take,
+      take: +limit,
       include: {
-        creator: true,
+        creator,
+        comments,
       },
       orderBy: {
         id: 'asc',
@@ -49,21 +75,45 @@ export class PostsService {
     return this.prismaService.post.count();
   }
 
-  findOne(id: number) {
+  findOne(id: number, query?: IncludeQueryDto) {
+    let creator: any = false,
+      comments: any = false;
+    if (query?.creator !== false) {
+      creator = {
+        select: {
+          firstName: true,
+          lastName: true,
+        },
+      };
+    }
+    if (query?.comments !== false) {
+      comments = {
+        select: {
+          body: true,
+          author: true,
+        },
+      };
+    }
     const post = this.prismaService.post.findUnique({
       where: {
         id: +id,
       },
       include: {
-        creator: true,
+        creator,
+        comments,
       },
     });
     if (!post) throw new NotFoundException();
     return post;
   }
 
-  async update(id: number, updatePostDto: Prisma.PostUpdateInput) {
-    await this.findOne(id);
+  async update(
+    id: number,
+    updatePostDto: Prisma.PostUpdateInput,
+    userId: number,
+  ) {
+    const post = await this.findOne(id);
+    if (post?.creatorId !== userId) throw new UnauthorizedException();
     return this.prismaService.post.update({
       data: updatePostDto,
       where: { id: +id },
@@ -91,8 +141,20 @@ export class PostsService {
     });
   }
 
-  async remove(id: number) {
-    await this.findOne(id);
-    return this.prismaService.post.delete({ where: { id } });
+  async commentPost(postCommentDto: Prisma.CommentCreateInput) {
+    return await this.prismaService.comment.create({
+      data: postCommentDto,
+      include: {
+        author: true,
+        post: true,
+      },
+    });
+  }
+
+  async remove(id: number, userId: number) {
+    const post = await this.findOne(id);
+    if (post?.creatorId !== userId) throw new UnauthorizedException();
+    this.prismaService.post.delete({ where: { id } });
+    return 'Post deleted successfully';
   }
 }

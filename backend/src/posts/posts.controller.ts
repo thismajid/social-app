@@ -9,13 +9,20 @@ import {
   Req,
   UseGuards,
   Query,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Me } from 'src/auth/guards/me.guard';
-import { start } from 'repl';
+import { PostCommentDto } from './dto/post-comment.dto';
+import { SearchQueryDto } from './dto/search-post.dto';
+import { isEmpty } from 'src/util';
+import { GetPostsDto } from './dto/get-posts.dto';
+import { removeProp } from 'src/util/removeProp';
+import { IncludeQueryDto } from './dto/include-query.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -33,29 +40,33 @@ export class PostsController {
   }
 
   @Get('/search')
-  search(@Query() query) {
-    const { searchQuery, tags } = query;
-    const searchedTags = tags.split(',');
-    return this.postsService.getPostsBySearch(searchQuery, searchedTags);
+  search(@Query() query: SearchQueryDto) {
+    return this.postsService.getPostsBySearch(isEmpty(query) ? null : query);
   }
 
   @Get()
-  async findAll(@Query() query) {
-    const page = Number(query.page) || 1;
-    const take = 8;
-    const skip = (page - 1) * take;
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async findAll(@Query() query: GetPostsDto) {
+    const { page, limit, ...includeQuery } = query;
+    const skip = (page - 1) * limit;
     const total = await this.postsService.countPosts();
-    const posts = await this.postsService.findAll(take, skip);
+    const posts = await this.postsService.findAll(includeQuery, skip, limit);
     return {
-      data: posts,
+      data: removeProp(posts, 'password'),
       currentPage: Number(page),
-      numberofPages: Math.ceil(total / take),
+      numberofPages: Math.ceil(total / limit),
     };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postsService.findOne(+id);
+  async findOne(@Param('id') id: string, @Query() query: IncludeQueryDto) {
+    const post = await this.postsService.findOne(+id, query);
+
+    removeProp(post, 'password');
+    removeProp(post, 'id');
+    removeProp(post, 'email');
+
+    return post;
   }
 
   @Patch(':id')
@@ -65,14 +76,16 @@ export class PostsController {
     @Body() updatePostDto: UpdatePostDto,
     @Me() { id: userId },
   ) {
-    console.log(id, updatePostDto);
-
-    return this.postsService.update(+id, {
-      ...updatePostDto,
-      creator: {
-        connect: { id: userId },
+    return this.postsService.update(
+      +id,
+      {
+        ...updatePostDto,
+        creator: {
+          connect: { id: userId },
+        },
       },
-    });
+      +userId,
+    );
   }
 
   @UseGuards(JwtAuthGuard)
@@ -81,9 +94,31 @@ export class PostsController {
     return this.postsService.likePost(id, userId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/commentPost')
+  async commentPost(
+    @Body() postCommentDto: PostCommentDto,
+    @Param('id') id: string,
+    @Me() { id: userId },
+  ) {
+    return await this.postsService.commentPost({
+      ...postCommentDto,
+      post: {
+        connect: {
+          id: +id,
+        },
+      },
+      author: {
+        connect: {
+          id: userId,
+        },
+      },
+    });
+  }
+
   @Delete(':id')
   @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string, @Me() { id: userId }) {
-    return this.postsService.remove(+id);
+    return this.postsService.remove(+id, userId);
   }
 }
