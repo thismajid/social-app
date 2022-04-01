@@ -154,7 +154,7 @@ export class PostsService {
   async remove(id: number, userId: number) {
     const post = await this.findOne(id);
     if (post?.creatorId !== userId) throw new UnauthorizedException();
-    this.prismaService.post.delete({ where: { id } });
+    await this.prismaService.post.delete({ where: { id } });
     return 'Post deleted successfully';
   }
 }

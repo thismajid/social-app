@@ -47,10 +47,15 @@ export class PostsController {
   @Get()
   @UsePipes(new ValidationPipe({ transform: true }))
   async findAll(@Query() query: GetPostsDto) {
-    const { page, limit, ...includeQuery } = query;
-    const skip = (page - 1) * limit;
-    const total = await this.postsService.countPosts();
-    const posts = await this.postsService.findAll(includeQuery, skip, limit);
+    const { limit, page, ...includeQuery } = query;
+
+    const skip = (+page - 1) * +limit;
+
+    const [total, posts] = await Promise.all([
+      this.postsService.countPosts(),
+      this.postsService.findAll(includeQuery, skip, limit),
+    ]);
+
     return {
       data: removeProp(posts, 'password'),
       currentPage: Number(page),

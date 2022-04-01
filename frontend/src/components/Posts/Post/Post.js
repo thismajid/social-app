@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   Card,
   CardActions,
@@ -8,30 +9,28 @@ import {
   ButtonBase,
 } from "@material-ui/core/";
 import ThumbUpAltIcon from "@material-ui/icons/ThumbUpAlt";
-import ThumbUpAltOutlined from "@material-ui/icons/ThumbUpAltOutlined";
 import DeleteIcon from "@material-ui/icons/Delete";
 import MoreHorizIcon from "@material-ui/icons/MoreHoriz";
-import moment from "moment";
+import ThumbUpAltOutlined from "@material-ui/icons/ThumbUpAltOutlined";
 import { useDispatch } from "react-redux";
+import moment from "moment";
 import { useHistory } from "react-router-dom";
 
-import { deletePost, getPostsBySearch, likePost } from "../../../actions/posts";
-
+import { likePost, deletePost } from "../../../actions/posts";
 import useStyles from "./styles";
-import { useState } from "react";
 
 const Post = ({ post, setCurrentId }) => {
-  const classes = useStyles();
-  const dispatch = useDispatch();
-  const history = useHistory();
   const user = JSON.parse(localStorage.getItem("profile"));
   const [likes, setLikes] = useState(post?.likes);
+  const dispatch = useDispatch();
+  const history = useHistory();
+  const classes = useStyles();
 
   const userId = user?.result?.id;
-  const hasLikedPost = post?.likes?.find((like) => like === userId);
+  const hasLikedPost = post.likes.find((like) => like === userId);
 
   const handleLike = async () => {
-    dispatch(likePost(post.id));
+    dispatch(likePost(post._id));
 
     if (hasLikedPost) {
       setLikes(post.likes.filter((id) => id !== userId));
@@ -41,19 +40,19 @@ const Post = ({ post, setCurrentId }) => {
   };
 
   const Likes = () => {
-    if (post?.likes?.length > 0) {
-      return post.likes.find((like) => like === user?.result?.id) ? (
+    if (likes.length > 0) {
+      return likes.find((like) => like === userId) ? (
         <>
           <ThumbUpAltIcon fontSize="small" />
           &nbsp;
-          {post.likes.length > 2
-            ? `You and ${post.likes.length - 1} others`
-            : `${post.likes.length} like${post.likes.length > 1 ? "s" : ""}`}
+          {likes.length > 2
+            ? `You and ${likes.length - 1} others`
+            : `${likes.length} like${likes.length > 1 ? "s" : ""}`}
         </>
       ) : (
         <>
           <ThumbUpAltOutlined fontSize="small" />
-          &nbsp;{post.likes.length} {post.likes.length === 1 ? "Like" : "Likes"}
+          &nbsp;{likes.length} {likes.length === 1 ? "Like" : "Likes"}
         </>
       );
     }
@@ -66,7 +65,13 @@ const Post = ({ post, setCurrentId }) => {
     );
   };
 
-  const openPost = () => history.push(`/posts/${post.id}`);
+  const openPost = (e) => {
+    // dispatch(getPost(post._id, history));
+
+    history.push(`/posts/${post.id}`);
+  };
+
+  console.log(post.selectedFile);
 
   return (
     <Card className={classes.card} raised elevation={6}>
@@ -92,7 +97,7 @@ const Post = ({ post, setCurrentId }) => {
             {moment(post.createdAt).fromNow()}
           </Typography>
         </div>
-        {user?.result?.id === post?.creator.id && (
+        {user?.result?.id === post?.creator?.id && (
           <div className={classes.overlay2} name="edit">
             <Button
               onClick={(e) => {
@@ -134,12 +139,11 @@ const Post = ({ post, setCurrentId }) => {
         >
           <Likes />
         </Button>
-        {(user?.result?.googleId === post?.creator ||
-          user?.result?._id === post?.creator) && (
+        {user?.result?.id === post?.creator?.id && (
           <Button
             size="small"
             color="secondary"
-            onClick={() => dispatch(deletePost(post._id))}
+            onClick={() => dispatch(deletePost(post.id))}
           >
             <DeleteIcon fontSize="small" /> &nbsp; Delete
           </Button>

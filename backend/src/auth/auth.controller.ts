@@ -11,6 +11,7 @@ import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Me } from './guards/me.guard';
+import { OAuthUserDto } from 'src/users/dto/oAuth-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -53,5 +54,12 @@ export class AuthController {
       },
       access_token,
     };
+  }
+
+  @Post('oAuth')
+  async oAuth(@Body() oAuthUserDto: OAuthUserDto) {
+    const user = await this.authService.oAuth(oAuthUserDto);
+
+    console.log(user);
   }
 }

@@ -26,3 +26,15 @@ export const register = (formData, history) => async (dispatch) => {
     console.log(error.message);
   }
 };
+
+export const oAuth = (formData, history) => async (dispatch) => {
+  try {
+    const { data } = await api.oAuth(formData);
+
+    dispatch({ type: "AUTH", data });
+
+    history.push("/");
+  } catch (err) {
+    console.log(err);
+  }
+};

@@ -11,7 +11,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOpenOutlined";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useHistory } from "react-router-dom";
-import { register, login } from "../../actions/auth";
+import { register, login, oAuth } from "../../actions/auth";
 
 import Input from "./Input";
 import Icon from "./Icon";
@@ -64,13 +64,19 @@ const Auth = () => {
     const result = res?.profileObj;
     const token = res?.tokenId;
 
-    try {
-      dispatch({ type: "AUTH", data: { result, token } });
+    const {
+      profileObj: { givenName, familyName, email, imageUrl },
+    } = res;
 
-      history.push("/");
-    } catch (error) {
-      console.log(error);
-    }
+    dispatch(oAuth({ givenName, familyName, email, imageUrl }, history));
+
+    // try {
+    //   dispatch({ type: "AUTH", data: { result, token } });
+
+    //   history.push("/");
+    // } catch (error) {
+    //   console.log(error);
+    // }
   };
 
   const googleFailure = () => {
@@ -156,7 +162,7 @@ const Auth = () => {
             onFailure={googleFailure}
             cookiePolicy="single_host_origin"
           />
-          <Grid container justify="flex-end">
+          <Grid container justifyContent="flex-end">
             <Grid item>
               <Button onClick={switchMode}>
                 {isRegister

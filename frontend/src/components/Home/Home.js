@@ -37,7 +37,6 @@ const Home = () => {
 
   const searchPost = () => {
     if (search.trim() || tags) {
-      console.log(dispatch);
       dispatch(getPostsBySearch({ search, tags: tags.join(",") }));
       history.push(
         `/posts/search?searchQuery=${search || "none"}&tags=${tags.join(",")}`
@@ -58,15 +57,12 @@ const Home = () => {
   const handleDeleteTag = (tagToDelete) =>
     setTags(tags.filter((tag) => tag !== tagToDelete));
 
-  useEffect(() => {
-    dispatch(getPosts());
-  }, [currentId, dispatch]);
   return (
     <Grow in>
       <Container maxWidth="xl">
         <Grid
           container
-          justify="space-between"
+          justifyContent="space-between"
           alignItems="stretch"
           spacing={3}
           className={classes.gridContainer}
