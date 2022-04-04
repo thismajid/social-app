@@ -1,4 +1,4 @@
-# Cryptochain - Backend
+# Social App - Backend
 
 ### For Using This Application Run These Commands
 
