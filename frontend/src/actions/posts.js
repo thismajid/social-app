@@ -59,7 +59,6 @@ export const createPost = (post, history) => async (dispatch) => {
     dispatch({ type: STOP_LOADING });
   } catch (error) {
     console.log(error);
-    console.log(error.message);
   }
 };
 
@@ -75,9 +74,9 @@ export const updatePost = (id, post) => async (dispatch) => {
 
 export const deletePost = (id) => async (dispatch) => {
   try {
-    await api.deletePost(id);
+    const { data } = await api.deletePost(id);
 
-    dispatch({ type: DELETE, payload: id });
+    dispatch({ type: DELETE, payload: data });
   } catch (error) {
     console.log(error.message);
   }

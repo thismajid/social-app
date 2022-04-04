@@ -35,8 +35,6 @@ export class AuthController {
   @Get('profile')
   @UseGuards(JwtAuthGuard)
   profile(@Me() me) {
-    console.log(me);
-
     return me;
   }
 
@@ -60,6 +58,15 @@ export class AuthController {
   async oAuth(@Body() oAuthUserDto: OAuthUserDto) {
     const user = await this.authService.oAuth(oAuthUserDto);
 
-    console.log(user);
+    const access_token = this.authService.sign(user);
+
+    return {
+      result: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+      access_token,
+    };
   }
 }

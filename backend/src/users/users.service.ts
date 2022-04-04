@@ -27,10 +27,9 @@ export class UsersService {
       firstName: oAuthUserDto.givenName,
       lastName: oAuthUserDto.familyName,
       password: oAuthUserDto.password,
-      selectedFile: oAuthUserDto.imageUrl,
     };
     const userExist = await this.findOneByEmail(userInfo.email);
-    if (userExist) return userExist;
+    if (userExist) return this.removePassword(userExist);
     const user = await this.prismaService.user.create({
       data: userInfo,
     });

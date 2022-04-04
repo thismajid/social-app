@@ -11,6 +11,8 @@ import {
   Query,
   UsePipes,
   ValidationPipe,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -23,25 +25,40 @@ import { isEmpty } from 'src/util';
 import { GetPostsDto } from './dto/get-posts.dto';
 import { removeProp } from 'src/util/removeProp';
 import { IncludeQueryDto } from './dto/include-query.dto';
-
+import { FileInterceptor } from '@nestjs/platform-express';
+import { storage } from './storage.config';
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@Body() createPostDto: CreatePostDto, @Me() { id }) {
-    return this.postsService.create({
-      ...createPostDto,
+  @UseInterceptors(FileInterceptor('image', { storage: storage }))
+  async create(
+    @UploadedFile() image: Express.Multer.File,
+    @Body() createPostDto: CreatePostDto,
+    @Me() { id },
+  ) {
+    const postImage = image
+      ? `http://localhost:3001/uploads/${image.filename}`
+      : '';
+    const newPost = await this.postsService.create({
+      ...{ ...createPostDto, image: postImage },
       creator: {
         connect: { id },
       },
     });
+    removeProp(newPost, 'password');
+
+    return newPost;
   }
 
   @Get('/search')
-  search(@Query() query: SearchQueryDto) {
-    return this.postsService.getPostsBySearch(isEmpty(query) ? null : query);
+  async search(@Query() query: SearchQueryDto) {
+    const posts = await this.postsService.getPostsBySearch(
+      isEmpty(query) ? null : query,
+    );
+    return posts;
   }
 
   @Get()
@@ -75,15 +92,20 @@ export class PostsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('image', { storage: storage }))
   update(
-    @Param('id') id: string,
+    @UploadedFile() image: Express.Multer.File,
+    @Param('id') postId: string,
     @Body() updatePostDto: UpdatePostDto,
     @Me() { id: userId },
   ) {
+    const postImage = image
+      ? `http://localhost:3001/uploads/${image.filename}`
+      : '';
     return this.postsService.update(
-      +id,
+      +postId,
       {
-        ...updatePostDto,
+        ...{ ...updatePostDto, image: postImage },
         creator: {
           connect: { id: userId },
         },

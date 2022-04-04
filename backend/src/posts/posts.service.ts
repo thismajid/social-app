@@ -26,7 +26,10 @@ export class PostsService {
       where: {
         OR: [
           {
-            title: query?.searchQuery,
+            title: {
+              contains: query?.searchQuery,
+              mode: 'insensitive',
+            },
           },
           {
             tags: { hasSome: searchedTags },
@@ -34,7 +37,12 @@ export class PostsService {
         ],
       },
       include: {
-        creator: true,
+        creator: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
   }
@@ -45,6 +53,7 @@ export class PostsService {
     if (includeQuery?.creator !== false) {
       creator = {
         select: {
+          id: true,
           firstName: true,
           lastName: true,
         },
@@ -116,7 +125,7 @@ export class PostsService {
     if (post?.creatorId !== userId) throw new UnauthorizedException();
     return this.prismaService.post.update({
       data: updatePostDto,
-      where: { id: +id },
+      where: { id },
     });
   }
 
@@ -138,6 +147,9 @@ export class PostsService {
       data: {
         likes: { set: post.likes },
       },
+      include: {
+        creator: true,
+      },
     });
   }
 
@@ -154,7 +166,11 @@ export class PostsService {
   async remove(id: number, userId: number) {
     const post = await this.findOne(id);
     if (post?.creatorId !== userId) throw new UnauthorizedException();
-    await this.prismaService.post.delete({ where: { id } });
-    return 'Post deleted successfully';
+    await this.prismaService.comment.deleteMany({
+      where: { postId: id },
+    });
+    return await this.prismaService.post.delete({
+      where: { id },
+    });
   }
 }

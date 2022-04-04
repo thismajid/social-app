@@ -1,7 +1,6 @@
+import React, { useState, useEffect, useRef } from "react";
 import useStyles from "./styles";
 import { TextField, Button, Typography, Paper } from "@material-ui/core";
-import FileBase from "react-file-base64";
-import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { createPost, updatePost } from "../../actions/posts";
 import { useSelector } from "react-redux";
@@ -13,7 +12,7 @@ const Form = ({ currentId, setCurrentId }) => {
     title: "",
     message: "",
     tags: "",
-    selectedFile: "",
+    image: "",
   });
   const dispatch = useDispatch();
   const post = useSelector((state) =>
@@ -21,6 +20,7 @@ const Form = ({ currentId, setCurrentId }) => {
   );
   const user = JSON.parse(localStorage.getItem("profile"));
   const history = useHistory();
+  const fileInput = useRef();
 
   useEffect(() => {
     if (post) setPostData(post);
@@ -28,14 +28,19 @@ const Form = ({ currentId, setCurrentId }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append("title", postData.title);
+    formData.append("message", postData.message);
+    formData.append("tags", postData.tags);
+    formData.append("image", postData.image);
 
     if (currentId) {
-      dispatch(updatePost(currentId, postData));
-      clear();
+      dispatch(updatePost(currentId, formData));
     } else {
-      dispatch(createPost(postData, history));
-      clear();
+      dispatch(createPost(formData, history));
     }
+
+    clear();
   };
 
   if (!user?.result) {
@@ -54,7 +59,7 @@ const Form = ({ currentId, setCurrentId }) => {
       title: "",
       message: "",
       tags: "",
-      selectedFile: "",
+      image: "",
     });
   };
 
@@ -99,15 +104,22 @@ const Form = ({ currentId, setCurrentId }) => {
             setPostData({ ...postData, tags: e.target.value.split(",") })
           }
         />
-        <div className={classes.fileInput}>
-          <FileBase
+
+        {/* <FileBase
             type="file"
             multiple={false}
             onDone={({ base64 }) =>
               setPostData({ ...postData, selectedFile: base64 })
             }
-          />
-        </div>
+          /> */}
+        <TextField
+          type="file"
+          name="image"
+          ref={fileInput}
+          onChange={(e) =>
+            setPostData({ ...postData, image: e.target.files[0] })
+          }
+        />
         <Button
           className={classes.buttonSubmit}
           variant="contained"

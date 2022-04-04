@@ -1,11 +1,14 @@
 import React from "react";
 import { Container } from "@material-ui/core";
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
+import PostDetails from "./components/PostDetails/PostDetails";
 import Navbar from "./components/Navbar/Navbar";
 import Home from "./components/Home/Home";
 import Auth from "./components/Auth/Auth";
-import PostDetails from "./components/PostDetails/PostDetails";
+// import CreatorOrTag from './components/CreatorOrTag/CreatorOrTag';
 
 const App = () => {
   const user = JSON.parse(localStorage.getItem("profile"));
@@ -13,12 +16,27 @@ const App = () => {
   return (
     <BrowserRouter>
       <Container maxWidth="xl">
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+        />
         <Navbar />
         <Switch>
           <Route path="/" exact component={() => <Redirect to="/posts" />} />
           <Route path="/posts" exact component={Home} />
           <Route path="/posts/search" exact component={Home} />
           <Route path="/posts/:id" exact component={PostDetails} />
+          {/* <Route
+      path={["/creators/:name", "/tags/:name"]}
+      component={CreatorOrTag}
+    /> */}
           <Route
             path="/auth"
             exact

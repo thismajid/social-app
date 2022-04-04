@@ -1,39 +1,38 @@
-import { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Grow,
   Grid,
-  Paper,
   AppBar,
   TextField,
   Button,
+  Paper,
 } from "@material-ui/core";
 import { useDispatch } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 import ChipInput from "material-ui-chip-input";
 
-import { getPosts, getPostsBySearch } from "../../actions/posts";
-
-import Posts from "./../Posts/Posts";
-import Form from "./../Form/Form";
+import { getPostsBySearch } from "../../actions/posts";
+import Posts from "../Posts/Posts";
+import Form from "../Form/Form";
 import Pagination from "../Pagination";
-
 import useStyles from "./styles";
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
-
 const Home = () => {
-  const [currentId, setCurrentId] = useState(null);
-  const dispatch = useDispatch();
+  const classes = useStyles();
   const query = useQuery();
-  const history = useHistory();
   const page = query.get("page") || 1;
   const searchQuery = query.get("searchQuery");
-  const classes = useStyles();
+
+  const [currentId, setCurrentId] = useState(0);
+  const dispatch = useDispatch();
+
   const [search, setSearch] = useState("");
   const [tags, setTags] = useState([]);
+  const history = useHistory();
 
   const searchPost = () => {
     if (search.trim() || tags) {
@@ -62,7 +61,7 @@ const Home = () => {
       <Container maxWidth="xl">
         <Grid
           container
-          justifyContent="space-between"
+          justify="space-between"
           alignItems="stretch"
           spacing={3}
           className={classes.gridContainer}
@@ -77,10 +76,10 @@ const Home = () => {
               color="inherit"
             >
               <TextField
+                onKeyDown={handleKeyPress}
                 name="search"
                 variant="outlined"
-                label="Search ..."
-                onKeyPress={handleKeyPress}
+                label="Search Memories"
                 fullWidth
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -104,7 +103,7 @@ const Home = () => {
             </AppBar>
             <Form currentId={currentId} setCurrentId={setCurrentId} />
             {!searchQuery && !tags.length && (
-              <Paper elevation={6} className={classes.pagination}>
+              <Paper className={classes.pagination} elevation={6}>
                 <Pagination page={page} />
               </Paper>
             )}

@@ -11,7 +11,7 @@ import { useParams, useHistory } from "react-router-dom";
 
 import CommentSection from "./CommentSection";
 
-import { getPost, getPostsBySearch } from "../../actions/posts";
+import { getPost } from "../../actions/posts";
 import useStyles from "./styles";
 
 const Post = () => {
@@ -24,12 +24,6 @@ const Post = () => {
   useEffect(() => {
     dispatch(getPost(id));
   }, [id]);
-
-  useEffect(() => {
-    if (post) {
-      dispatch(getPostsBySearch({ tags: post?.tags.join(",") }));
-    }
-  }, [post]);
 
   const openPost = (id) => {
     history.push(`/posts/${id}`);
@@ -83,7 +77,7 @@ const Post = () => {
           <img
             className={classes.media}
             src={
-              post.selectedFile ||
+              post.image ||
               "https://user-images.githubusercontent.com/194400/49531010-48dad180-f8b1-11e8-8d89-1e61320e1d82.png"
             }
             alt={post.title}

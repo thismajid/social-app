@@ -15,8 +15,10 @@ import ThumbUpAltOutlined from "@material-ui/icons/ThumbUpAltOutlined";
 import { useDispatch } from "react-redux";
 import moment from "moment";
 import { useHistory } from "react-router-dom";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
 
-import { likePost, deletePost } from "../../../actions/posts";
+import { likePost, deletePost, getPost } from "../../../actions/posts";
 import useStyles from "./styles";
 
 const Post = ({ post, setCurrentId }) => {
@@ -27,21 +29,37 @@ const Post = ({ post, setCurrentId }) => {
   const classes = useStyles();
 
   const userId = user?.result?.id;
-  const hasLikedPost = post.likes.find((like) => like === userId);
+  const hasLikedPost = post.likes.find((like) => +like === +userId);
 
   const handleLike = async () => {
-    dispatch(likePost(post._id));
+    dispatch(likePost(post.id));
 
     if (hasLikedPost) {
-      setLikes(post.likes.filter((id) => id !== userId));
+      setLikes(likes.filter((id) => +id !== +userId));
     } else {
-      setLikes([...post.likes, userId]);
+      setLikes([...likes, +userId]);
     }
   };
 
-  const Likes = () => {
+  const deleteHandler = () => {
+    confirmAlert({
+      title: "Delete post",
+      message: `Are you sure to delete ${post.title} ?`,
+      buttons: [
+        {
+          label: "Yes",
+          onClick: () => dispatch(deletePost(post.id)),
+        },
+        {
+          label: "No",
+        },
+      ],
+    });
+  };
+
+  const LikesComponent = () => {
     if (likes.length > 0) {
-      return likes.find((like) => like === userId) ? (
+      return likes.find((like) => +like === +userId) ? (
         <>
           <ThumbUpAltIcon fontSize="small" />
           &nbsp;
@@ -65,13 +83,11 @@ const Post = ({ post, setCurrentId }) => {
     );
   };
 
-  const openPost = (e) => {
-    // dispatch(getPost(post._id, history));
+  const openPost = () => {
+    dispatch(getPost(post.id, history));
 
     history.push(`/posts/${post.id}`);
   };
-
-  console.log(post.selectedFile);
 
   return (
     <Card className={classes.card} raised elevation={6}>
@@ -84,20 +100,21 @@ const Post = ({ post, setCurrentId }) => {
         <CardMedia
           className={classes.media}
           image={
-            post.selectedFile ||
+            post.image ||
             "https://user-images.githubusercontent.com/194400/49531010-48dad180-f8b1-11e8-8d89-1e61320e1d82.png"
           }
           title={post.title}
         />
         <div className={classes.overlay}>
           <Typography variant="h6">
-            {post.creator.firstName} {post.creator.lastName}
+            {post?.creator?.firstName} {post?.creator?.lastName}
           </Typography>
           <Typography variant="body2">
             {moment(post.createdAt).fromNow()}
           </Typography>
         </div>
-        {user?.result?.id === post?.creator?.id && (
+
+        {user?.result?.id === post?.creatorId && (
           <div className={classes.overlay2} name="edit">
             <Button
               onClick={(e) => {
@@ -137,14 +154,10 @@ const Post = ({ post, setCurrentId }) => {
           disabled={!user?.result}
           onClick={handleLike}
         >
-          <Likes />
+          <LikesComponent />
         </Button>
-        {user?.result?.id === post?.creator?.id && (
-          <Button
-            size="small"
-            color="secondary"
-            onClick={() => dispatch(deletePost(post.id))}
-          >
+        {user?.result?.id === post?.creatorId && (
+          <Button size="small" color="secondary" onClick={deleteHandler}>
             <DeleteIcon fontSize="small" /> &nbsp; Delete
           </Button>
         )}

@@ -16,10 +16,8 @@ export class CreatePostDto {
   @MinLength(3)
   creator: string;
 
-  @IsNotEmpty()
   @IsString()
-  @MinLength(3)
-  selectedFile: string;
+  image?: string;
 
   tags: string[];
 }

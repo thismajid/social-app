@@ -18,5 +18,4 @@ export class OAuthUserDto {
 
   @IsString()
   password?: string;
-  imageUrl: any;
 }

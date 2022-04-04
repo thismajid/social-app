@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const API = axios.create({
   baseURL: "http://localhost:3001/api",
@@ -14,6 +15,28 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
+API.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const { status } = error.response;
+    if (status === 401) {
+      localStorage.removeItem("profile");
+      toast.error("Expire Login Time, Please Login Again", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      setTimeout(() => {
+        window.location = "/";
+      }, 3300);
+    }
+  }
+);
+
 export const fetchPost = (id) => API.get(`/posts/${id}`);
 export const fetchPosts = (page) => API.get(`/posts?creator&page=${page}`);
 export const fetchPostsBySearch = (searchQuery) =>
@@ -22,9 +45,16 @@ export const fetchPostsBySearch = (searchQuery) =>
       searchQuery.tags
     }`
   );
-export const createPost = (newPost) => API.post("/posts", newPost);
-export const updatePost = (id, updatePost) =>
-  API.patch(`/posts/${id}`, updatePost);
+export const createPost = (formData) =>
+  API.post("/posts", formData, {
+    headers: { "content-type": "multipart/form-data" },
+  });
+export const updatePost = (id, formData) =>
+  API.patch(`/posts/${id}`, formData, {
+    headers: {
+      "content-type": "multipart/form-data",
+    },
+  });
 export const deletePost = (id) => API.delete(`/posts/${id}`);
 export const likePost = (id) => API.patch(`/posts/${id}/likePost`);
 export const comment = (body, id) =>

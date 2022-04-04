@@ -27,7 +27,7 @@ model Post {
   creator User @relation(fields:[creatorId], references: [id])
   creatorId Int
   tags String[]
-  selectedFile String
+  image String
   likes String[]
   comments Comment[]
   createdAt DateTime @default(now())
